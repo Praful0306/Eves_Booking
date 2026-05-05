@@ -23,4 +23,4 @@ COPY --from=builder /app/package*.json ./
 ENV NODE_ENV=production
 EXPOSE 3001
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/server.js"]
