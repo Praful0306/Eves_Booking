@@ -1,4 +1,5 @@
 FROM node:20-alpine AS builder
+RUN apk add --no-cache openssl
 WORKDIR /app
 
 COPY package*.json ./
@@ -13,6 +14,7 @@ RUN npx prisma generate --schema=./prisma/schema.prisma
 RUN cd apps/api && npx tsup src/server.ts --format cjs --clean
 
 FROM node:20-alpine AS runner
+RUN apk add --no-cache openssl
 WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
