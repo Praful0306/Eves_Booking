@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+.prisma/
+.next/
+eves_project.zip
+apps/api/api.log
