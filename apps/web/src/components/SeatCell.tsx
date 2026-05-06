@@ -25,24 +25,24 @@ export default function SeatCell({ seat, isMyLock, onClick, disabled }: Props) {
     ? 'seat-locked'
     : 'seat-booked';
 
-  const label = seat.seatNumber.replace(/([A-Z])(\d+)/, '$1$2');
+  const isClickable = (seat.status === 'AVAILABLE' || isMyLock) && !disabled;
 
   return (
     <motion.button
-      whileHover={seat.status === 'AVAILABLE' && !disabled ? { scale: 1.12 } : {}}
-      whileTap={seat.status === 'AVAILABLE' && !disabled ? { scale: 0.95 } : {}}
+      whileHover={isClickable ? { scale: 1.12 } : {}}
+      whileTap={isClickable ? { scale: 0.95 } : {}}
       layout
       className={cn('seat-cell', statusClass)}
-      onClick={() => seat.status === 'AVAILABLE' && !disabled && onClick(seat.id)}
+      onClick={() => isClickable && onClick(seat.id)}
       title={
-        isMyLock ? 'Your seat — proceed to payment'
+        isMyLock ? 'Your seat — click to deselect'
         : seat.status === 'LOCKED' ? 'Locked by another user'
         : seat.status === 'BOOKED' ? 'Already booked'
         : `Click to lock ${seat.seatNumber}`
       }
       aria-label={seat.seatNumber}
     >
-      {seat.seatNumber.replace(/[A-Z]/, '')}
+      {seat.seatNumber.replace(/[A-Z]/g, '')}
     </motion.button>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { CheckCircle2, Ticket, ArrowRight } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import BookingCard from '@/components/BookingCard';
@@ -27,73 +28,102 @@ function BookingsContent() {
 
   const bookings = data || [];
 
-  // Group bookings by bookingCode prefix or show all
-  const grouped = groupCode
-    ? bookings.filter((b: any) => b.bookingCode?.startsWith('EVES-') || b.bookingCode === groupCode)
-    : null;
-
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="mb-8">
-          <div className="section-label mb-3">My Account</div>
-          <h1 className="text-3xl font-black text-white mb-1">My Bookings</h1>
-          <p className="text-white/40 text-sm">All your confirmed and past bookings</p>
-        </div>
+    <div className="bg-white min-h-screen">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
-        {/* Group banner */}
-        {groupCode && (
-          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
-            className="glass-card p-5 border-emerald-500/20 mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <div>
-                <h2 className="font-bold text-emerald-400 text-sm">Payment Confirmed!</h2>
-                <p className="text-white/40 text-xs">Group Code: <span className="font-mono text-white/60">{groupCode}</span></p>
-              </div>
-            </div>
-            <p className="text-white/50 text-sm">Your seats have been atomically confirmed using PostgreSQL SELECT FOR UPDATE — zero double-booking guaranteed.</p>
-          </motion.div>
-        )}
+          {/* Header */}
+          <div className="mb-8">
+            <div className="label-eyebrow mb-3">My Account</div>
+            <h1 className="font-display font-black text-slate-900 text-4xl mb-2">
+              My <span className="gradient-text">Bookings</span>
+            </h1>
+            <p className="text-slate-400">All your confirmed and past bookings</p>
+          </div>
 
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="glass-card p-5 animate-pulse">
-                <div className="h-4 bg-white/[0.06] rounded w-2/3 mb-3" />
-                <div className="h-4 bg-white/[0.06] rounded w-1/2 mb-2" />
-                <div className="h-3 bg-white/[0.06] rounded w-1/4" />
+          {/* Group success banner */}
+          {groupCode && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="card border-emerald-200 bg-emerald-50/50 p-5 mb-6"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-emerald-700 text-sm mb-0.5">Payment Confirmed!</h2>
+                  <p className="text-slate-500 text-xs mb-1">
+                    Group Code: <span className="font-mono font-bold text-slate-700">{groupCode}</span>
+                  </p>
+                  <p className="text-slate-500 text-sm">
+                    Your seats have been atomically confirmed using PostgreSQL SELECT FOR UPDATE — zero double-booking guaranteed.
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
-        ) : bookings.length === 0 ? (
-          <div className="glass-card p-16 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+            </motion.div>
+          )}
+
+          {/* Content */}
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="card p-5 animate-pulse">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-slate-100 rounded w-2/3" />
+                      <div className="h-3 bg-slate-100 rounded w-1/2" />
+                      <div className="h-3 bg-slate-100 rounded w-1/3" />
+                    </div>
+                    <div className="h-6 bg-slate-100 rounded w-20" />
+                  </div>
+                </div>
+              ))}
             </div>
-            <p className="text-white/50 font-medium mb-1">No bookings yet</p>
-            <p className="text-white/30 text-sm mb-5">Browse events and lock some seats to get started</p>
-            <button onClick={() => router.push('/events')} className="btn-primary">Browse Events</button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {bookings.map((booking: any, i: number) => (
-              <motion.div key={booking.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <BookingCard booking={booking} />
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </motion.div>
+          ) : bookings.length === 0 ? (
+            <div className="card p-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4">
+                <Ticket className="w-7 h-7 text-slate-300" />
+              </div>
+              <p className="font-display font-bold text-slate-700 text-lg mb-1">No bookings yet</p>
+              <p className="text-slate-400 text-sm mb-6">Browse events and lock some seats to get started</p>
+              <button
+                onClick={() => router.push('/events')}
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                Browse Events
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {bookings.map((booking: any, i: number) => (
+                <motion.div
+                  key={booking.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                >
+                  <BookingCard booking={booking} />
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
 export default function BookingsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-white/40">Loading…</div></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-slate-400 font-mono text-sm">Loading…</div>
+      </div>
+    }>
       <BookingsContent />
     </Suspense>
   );

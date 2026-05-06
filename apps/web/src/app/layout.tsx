@@ -12,23 +12,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }));
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <title>Eves — Real-Time Seat Booking</title>
         <meta name="description" content="Zero double bookings. Atomic locks. Phantom lock recovery." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="min-h-screen bg-[#050508]">
+      <body className="min-h-screen bg-white text-slate-900 font-sans">
         <QueryClientProvider client={queryClient}>
           <Navbar />
-          <main>{children}</main>
+          <main className="pt-16">{children}</main>
           <Toaster
-            theme="dark"
+            theme="light"
             richColors
             position="top-right"
-            toastOptions={{
-              style: { background: '#0d0d14', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' },
-            }}
           />
         </QueryClientProvider>
       </body>

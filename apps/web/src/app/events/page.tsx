@@ -2,15 +2,34 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Search, Plus, MapPin, Calendar, Grid3x3, ArrowRight, Ticket } from 'lucide-react';
 import { api } from '@/lib/api';
-import EventCard from '@/components/EventCard';
-import { EVENT_TYPE_LABELS } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
+import { EVENT_TYPE_LABELS, EVENT_TYPE_ICONS, formatDateTime } from '@/lib/utils';
 
 const TYPES = ['ALL', 'TRAIN', 'BUS', 'CINEMA', 'EVENT', 'STADIUM'];
+
+const TYPE_IMAGES: Record<string, string> = {
+  TRAIN: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600&q=80',
+  BUS: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&q=80',
+  CINEMA: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&q=80',
+  EVENT: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80',
+  STADIUM: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=600&q=80',
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  TRAIN: 'bg-blue-100 text-blue-700 border-blue-200',
+  BUS: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  CINEMA: 'bg-violet-100 text-violet-700 border-violet-200',
+  EVENT: 'bg-orange-100 text-orange-700 border-orange-200',
+  STADIUM: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+};
 
 export default function EventsPage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
+  const { user } = useAuthStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ['events'],
@@ -27,73 +46,178 @@ export default function EventsPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Header */}
-        <div className="mb-8">
-          <div className="section-label mb-3">Live Events</div>
-          <h1 className="text-3xl font-black text-white mb-1">Events & Bookings</h1>
-          <p className="text-white/40 text-sm">Select an event to view the real-time seat map</p>
-        </div>
+    <div className="bg-white min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-8">
-          <div className="relative flex-1">
-            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search events, routes, venues…"
-              className="input-dark pl-10"
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {TYPES.map(t => (
-              <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                  typeFilter === t
-                    ? 'bg-[#4f8ef7] text-white'
-                    : 'bg-white/[0.04] border border-white/[0.06] text-white/50 hover:text-white hover:bg-white/[0.08]'
-                }`}>
-                {t === 'ALL' ? 'All Types' : EVENT_TYPE_LABELS[t] || t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Grid */}
-        {isLoading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="glass-card p-5 animate-pulse">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 bg-white/[0.06] rounded" />
-                  <div className="h-4 bg-white/[0.06] rounded w-20" />
-                </div>
-                <div className="h-5 bg-white/[0.06] rounded w-3/4 mb-2" />
-                <div className="h-4 bg-white/[0.06] rounded w-1/2" />
+          {/* Header */}
+          <div className="mb-10">
+            <div className="label-eyebrow mb-3">Live Inventory</div>
+            <div className="flex items-end justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="font-display font-black text-slate-900 text-4xl mb-2">
+                  Pick an <span className="gradient-text">event</span>
+                </h1>
+                <p className="text-slate-400">Select an event to view the real-time seat map and start booking</p>
               </div>
-            ))}
-          </div>
-        ) : events.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
+              {user?.role === 'ADMIN' && (
+                <Link href="/admin" className="btn-primary flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  New Event
+                </Link>
+              )}
             </div>
-            <p className="text-white/50 font-medium">No events found</p>
-            <p className="text-white/30 text-sm mt-1">Try adjusting your search or filter</p>
           </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {events.map((event: any, i: number) => (
-              <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <EventCard event={event} />
-              </motion.div>
-            ))}
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search events, routes, venues…"
+                className="input-field pl-10"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {TYPES.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border ${
+                    typeFilter === t
+                      ? 'text-white border-transparent shadow-sm'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                  }`}
+                  style={typeFilter === t ? { background: 'linear-gradient(135deg, #2563EB, #7C3AED)' } : {}}
+                >
+                  {t === 'ALL' ? 'All Types' : (EVENT_TYPE_LABELS[t] || t)}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-      </motion.div>
+
+          {/* Grid */}
+          {isLoading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="card animate-pulse overflow-hidden">
+                  <div className="h-48 bg-slate-100" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-4 bg-slate-100 rounded w-20" />
+                    <div className="h-5 bg-slate-100 rounded w-3/4" />
+                    <div className="h-4 bg-slate-100 rounded w-1/2" />
+                    <div className="h-3 bg-slate-100 rounded w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : events.length === 0 ? (
+            <div className="text-center py-24">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-4">
+                <Ticket className="w-7 h-7 text-slate-300" />
+              </div>
+              <p className="font-display font-bold text-slate-700 text-lg mb-1">No events found</p>
+              <p className="text-slate-400 text-sm">Try adjusting your search or filter</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {events.map((event: any, i: number) => {
+                const available = event._count
+                  ? event._count.seats - event._count.bookings
+                  : event.totalSeats;
+                const pct = event.totalSeats > 0 ? (available / event.totalSeats) * 100 : 0;
+                const fillColor = pct > 50 ? 'bg-emerald-500' : pct > 20 ? 'bg-yellow-400' : 'bg-red-500';
+                const typeColor = TYPE_COLORS[event.type] || 'bg-slate-100 text-slate-600 border-slate-200';
+                const imgUrl = TYPE_IMAGES[event.type] || TYPE_IMAGES['EVENT'];
+
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    whileHover={{ y: -4 }}
+                  >
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="card block overflow-hidden group transition-all duration-300 hover:shadow-lg hover:border-slate-300"
+                    >
+                      {/* Image area */}
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={imgUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+
+                        {/* Type badge */}
+                        <div className="absolute top-3 left-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${typeColor}`}>
+                            {EVENT_TYPE_ICONS[event.type] || '🎫'} {EVENT_TYPE_LABELS[event.type] || event.type}
+                          </span>
+                        </div>
+
+                        {/* Bottom overlay */}
+                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                          <span className="font-mono text-white text-xs font-bold bg-black/40 backdrop-blur-sm px-2 py-1 rounded-lg">
+                            {available} seats left
+                          </span>
+                          <span className="flex items-center gap-1 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg">
+                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                            LIVE
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card body */}
+                      <div className="p-5">
+                        <h3 className="font-display font-bold text-slate-900 text-lg mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-1">
+                          {event.title}
+                        </h3>
+
+                        <div className="flex items-center gap-1.5 text-slate-400 text-sm mb-1">
+                          <MapPin className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">
+                            {event.source && event.destination
+                              ? `${event.source} → ${event.destination}`
+                              : event.venue || '—'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
+                          <Calendar className="w-3 h-3 shrink-0" />
+                          <span>{formatDateTime(event.eventDate)}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-4">
+                          <Grid3x3 className="w-3 h-3 shrink-0" />
+                          <span>{event.rows} rows × {event.columns} cols = {event.totalSeats} seats</span>
+                        </div>
+
+                        {/* Availability bar */}
+                        <div className="h-1 rounded-full bg-slate-100 overflow-hidden mb-3">
+                          <div className={`h-full rounded-full transition-all ${fillColor}`} style={{ width: `${pct}%` }} />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-400">{pct.toFixed(0)}% available</span>
+                          <span className="text-xs font-semibold text-blue-600 group-hover:gap-2 flex items-center gap-1 transition-all">
+                            Select seats <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 }

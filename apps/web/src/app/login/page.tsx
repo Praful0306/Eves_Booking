@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { Mail, Lock, ArrowRight, Zap } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { getApiError } from '@/lib/api';
 
@@ -11,8 +12,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuthStore();
+  const { login, user } = useAuthStore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user) router.push('/events');
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,54 +39,113 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 pt-16">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-grid opacity-60 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%)', transform: 'translate(20%, -20%)' }} />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.05) 0%, transparent 70%)', transform: 'translate(-20%, 20%)' }} />
+
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md relative z-10"
+      >
+        {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#4f8ef7] to-[#7c3aed] flex items-center justify-center text-white font-black text-xl mx-auto mb-4">
+          <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl text-white font-black text-2xl mb-5 shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #2563EB, #7C3AED)' }}>
             E
-          </div>
-          <h1 className="text-2xl font-black text-white mb-1">Welcome back</h1>
-          <p className="text-sm text-white/40">Sign in to your Eves account</p>
+          </Link>
+          <div className="label-eyebrow mb-2">Welcome Back</div>
+          <h1 className="font-display font-black text-slate-900 text-3xl">Sign in to Eves</h1>
+          <p className="text-slate-400 text-sm mt-2">Enter your credentials to continue</p>
         </div>
 
-        <div className="glass-card p-7">
-          {/* Demo shortcuts */}
-          <div className="flex gap-2 mb-6">
-            <button type="button" onClick={() => fillDemo('admin')}
-              className="flex-1 text-xs py-2 px-3 rounded-lg border border-[#4f8ef7]/20 text-[#4f8ef7] hover:bg-[#4f8ef7]/10 transition-colors">
-              Fill Admin Demo
-            </button>
-            <button type="button" onClick={() => fillDemo('user')}
-              className="flex-1 text-xs py-2 px-3 rounded-lg border border-white/[0.08] text-white/50 hover:bg-white/[0.04] transition-colors">
-              Fill User Demo
-            </button>
+        <div className="card p-8 shadow-lg">
+
+          {/* Demo credentials box */}
+          <div className="bg-blue-50 border border-dashed border-blue-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="w-3.5 h-3.5 text-blue-600" />
+              <span className="label-eyebrow text-blue-600">Quick Fill</span>
+            </div>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => fillDemo('admin')}
+                className="flex-1 text-xs py-2.5 px-3 rounded-lg border border-blue-300 bg-white text-blue-700 font-semibold hover:bg-blue-50 transition-colors">
+                Admin Demo
+              </button>
+              <button type="button" onClick={() => fillDemo('user')}
+                className="flex-1 text-xs py-2.5 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition-colors">
+                User Demo
+              </button>
+            </div>
+            <div className="mt-3 font-mono text-xs text-slate-400 space-y-0.5">
+              <p>admin@eves.io / admin123</p>
+              <p>user@eves.io / user123</p>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="label-dark">Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                className="input-dark" placeholder="you@example.com" />
+              <label className="label-dark">Email address</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  className="input-field pl-10"
+                  placeholder="you@example.com"
+                />
+              </div>
             </div>
+
             <div>
               <label className="label-dark">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-                className="input-dark" placeholder="••••••••" />
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  className="input-field pl-10"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
-            <button type="submit" disabled={loading}
-              className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed py-3">
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full justify-center py-3 mt-2 text-base"
+            >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
                   Signing in…
                 </span>
-              ) : 'Sign In'}
+              ) : (
+                <span className="flex items-center gap-2">
+                  Sign In
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              )}
             </button>
           </form>
 
-          <p className="text-center text-sm text-white/40 mt-5">
+          <p className="text-center text-sm text-slate-400 mt-6">
             No account?{' '}
-            <Link href="/register" className="text-[#4f8ef7] font-medium hover:text-white transition-colors">Get started free</Link>
+            <Link href="/register" className="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+              Create one free
+            </Link>
           </p>
         </div>
       </motion.div>
